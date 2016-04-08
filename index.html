@@ -401,6 +401,31 @@ See http://rsync.samba.org/ for updates, bug reports, and answers
     <pre>rsync -a prioux@superserver.mcgill.ca:/data/brainfolly/ ~/follycopy</pre>
   </section>
 
+  <section id="destexists">
+    <h2>Important!</h2>
+    <h3>Does the destination directory exist?</h3>
+    <em>rsync</em> creates the destination directory if it<br>
+    doesn't already exist (last component only).
+    <p>
+    E.g. if /X/Y/Z exists but not N, then N will be created and the content of C will go into N:
+    <pre>rsync -a /A/B/C   /X/Y/Z<em>/N</em></pre>
+
+    Which means that a repetition of the <em>rsync</em> command can cause total duplication!
+
+    <pre>rsync -a /A/B/C   /X/Y/Z/N  # N doesn't exist but is created
+         rsync -a /A/B/C   /X/Y/Z/N  # N exists now, so data sent to /X/Y/Z/N<em>/C</em> !!!</pre>
+  </section>
+
+  <section id="trailingslash">
+    <h2>Important!</h2>
+    <h3>The trailing <em>/</em> in the source!</h3>
+    <em>rsync</em>'s behavior change when a trailing <em>/</em> is added to the source specification.
+    <p>
+    E.g. Assuming X/Y/Z exists:
+    <pre>rsync -a /A/B/<em>C</em>   /X/Y/Z     # will create/update /X/Y/Z/<em>C</em> at the destination</pre>
+    <pre>rsync -a /A/B/C<em>/</em>  /X/Y/Z     # the files <em>inside</em> C go directly <em>inside</em> /X/Y/Z</pre>
+  </section>
+
 </section>
 
 
@@ -487,20 +512,6 @@ total size is 4987326901335  speedup is 803.87
 
 
 
-<section id="consider">
-  <h2>Things to consider</h2>
-  Before launching a <em>rsync</em> command, consider:
-  <p>
-  <ul>
-    <li>Are there hardlinks among my sources?</li>
-    <li>Are timestamp reliable? (think FAT filesystems)</li>
-    <li>Do I want to make changes <em>--inplace</em>?</li>
-    <li>What are the <em>--exludes</em> I can specify?</li>
-    <li>Do I need <em>rsync</em> to run as root on the source side?</li>
-    <li>What about on the destination side?</li>
-  </ul>
-</section>
-
 <section id="sourceroot">
   <h2>Running sender as root</h2>
   <ul>
@@ -564,31 +575,6 @@ total size is 4987326901335  speedup is 803.87
   </ul>
   <p>
   <pre>rsync -a <em>--delete</em> /mystudy ace-storage-19:/studybackup</pre>
-</section>
-
-<section id="destexists">
-  <h2>Important!</h2>
-  <h3>Does the destination directory exist?</h3>
-  <em>rsync</em> creates the destination directory if it<br>
-  doesn't already exist (last component only).
-  <p>
-  E.g. if /X/Y/Z exists but not N, then N will be created and the content of C will go into N:
-  <pre>rsync -a /A/B/C   /X/Y/Z<em>/N</em></pre>
-
-  Which means that a repetition of the <em>rsync</em> command can cause total duplication!
-
-  <pre>rsync -a /A/B/C   /X/Y/Z/N  # N doesn't exist but is created
-       rsync -a /A/B/C   /X/Y/Z/N  # N exists now, so data sent to /X/Y/Z/N<em>/C</em> !!!</pre>
-</section>
-
-<section id="trailingslash">
-  <h2>Important!</h2>
-  <h3>The trailing <em>/</em> in the source!</h3>
-  <em>rsync</em>'s behavior change when a trailing <em>/</em> is added to the source specification.
-  <p>
-  E.g. Assuming X/Y/Z exists:
-  <pre>rsync -a /A/B/<em>C</em>   /X/Y/Z     # will create/update /X/Y/Z/<em>C</em> at the destination</pre>
-  <pre>rsync -a /A/B/C<em>/</em>  /X/Y/Z     # the files <em>inside</em> C go directly <em>inside</em> /X/Y/Z</pre>
 </section>
 
 <section id="dryrun">
@@ -669,6 +655,27 @@ total size is 4987326901335  speedup is 803.87
   Multiple sources can be sent to a single destination:
   <pre>rsync -a /A/B  /X/Y/Z  /home/prioux /dest  # creates/updates /dest/B, /dest/Z and /dest/prioux</pre>
   <pre>rsync -a /A/B<em>/</em> /X/Y/Z<em>/</em> /home/prioux<em>/</em> /dest  # sends all source content inside /dest</pre>
+</section>
+
+<section id="consider">
+  <h2>Things to consider</h2>
+  Before launching a <em>rsync</em> command, consider:
+  <p>
+  <ul>
+    <li>Are there hardlinks among my sources?</li>
+    <li>Are timestamp reliable? (think FAT filesystems)</li>
+    <li>Do I want to make changes <em>--inplace</em>?</li>
+    <li>What are the <em>--exludes</em> I can specify?</li>
+    <li>Do I need <em>rsync</em> to run as root on the source side?</li>
+    <li>What about on the destination side?</li>
+  </ul>
+</section>
+
+<section id="perfect">
+  <h2>The perfect mirror</h2>
+  This command mirrors perfectly a directory tree, and avoids all the pitfals of
+  source and destination specifications.
+  <pre>rsync -a -H --delete /my/source/data/ /my/dest/data</pre>
 </section>
 
 <section id="end">
