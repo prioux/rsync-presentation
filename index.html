@@ -512,32 +512,38 @@ total size is 4987326901335  speedup is 803.87
 
 
 
-<section id="sourceroot">
-  <h2>Running sender as root</h2>
-  <ul>
-    <li>Can traverse the source tree completely</li>
-    <li>Only needed when that tree contains mixed ownership data</li>
-  </ul>
+<section>
+
+  <section id="sourceroot">
+    <h2>Running sender as root</h2>
+    <ul>
+      <li>Can traverse the source tree completely</li>
+      <li>Only needed when that tree contains mixed ownership data</li>
+    </ul>
+  </section>
+
+  <section id="destroot">
+    <h2>Running receiver as root</h2>
+    <ul>
+      <li>Can recreate with ownership completely</li>
+      <li>Security risk for automatic systems</li>
+    </ul>
+  </section>
+
+  <section id="fakeroot">
+    <h2>Fake root mode (<em>--fake-super</em>)</h2>
+     <ul>
+       <li>You still run as root on the source side</li>
+       <li>On the destination, a non-privileged user can run <em>rsync</em></li>
+       <li>Information about ownerhsip, groupship etc is stored in extended
+           attributes, assuming the target filesystem supports them (e.g <em>ext4</em>)</li>
+       <li>This is what ACElab use for incremental backups</li>
+     </ul>
+  </section>
+
 </section>
 
-<section id="destroot">
-  <h2>Running receiver as root</h2>
-  <ul>
-    <li>Can recreate with ownership completely</li>
-    <li>Security risk for automatic systems</li>
-  </ul>
-</section>
 
-<section id="fakeroot">
-  <h2>Fake root mode (<em>--fake-super</em>)</h2>
-   <ul>
-     <li>You still run as root on the source side</li>
-     <li>On the destination, a non-privileged user can run <em>rsync</em></li>
-     <li>Information about ownerhsip, groupship etc is stored in extended
-         attributes, assuming the target filesystem supports them (e.g <em>ext4</em>)</li>
-     <li>This is what ACElab use for incremental backups</li>
-   </ul>
-</section>
 
 <section id="hardlinks">
   <h2>Hard links: not reproduced!</h2>
@@ -586,30 +592,32 @@ total size is 4987326901335  speedup is 803.87
   In combination with the reporting options, one can double-check that <em>rsync</em> will do what is expected.
 </section>
 
-<section id="notinplace">
-  <h2>File updating</h2>
-  <h3>Not performed in place!</h3>
-  When updating an existing file on the destination side, <em>rsync</em>
-  recreates it beside the previous version and then renames it in place:
-  <pre>
-  unix$ ls -al
-  -rw-r--r--    1 prioux  staff   44871173 Apr 08  2016 .big_one_gig_file.img.yAGHxB
-  -rw-r--r--    1 prioux  staff 1023422499 Oct 23  2013 big_one_gig_file.img
-  </pre>
-  (After the file's entire data is synchronized)
-  <pre>
-  unix$ ls -al
-  -rw-r--r--    1 prioux  staff 1071933211 Mar 21  2015 big_one_gig_file.img
-  </pre>
-</section>
+<section>
 
-<section id="inplace">
-  <h2>File updating: <em>--inplace</em></h2>
-  In some circumpstances, we can prefer to let <em>rsync</em> modify the content of destination files, directly.
-  <pre>rsync -a <em>--inplace</em> big_one_gig_file.img prioux@destination:big_one_gig_file.img</pre>
-  This kind of behavior is ideal for LARGE files with internal content changing in localized regions,
-  such as VM disk images. This takes full advantage of the differentiating algorithm of <em>rsync</em>.
-  <pre>
+  <section id="notinplace">
+    <h2>File updating</h2>
+    <h3>Not performed in place!</h3>
+    When updating an existing file on the destination side, <em>rsync</em>
+    recreates it beside the previous version and then renames it in place:
+    <pre>
+    unix$ ls -al
+    -rw-r--r--    1 prioux  staff   44871173 Apr 08  2016 .big_one_gig_file.img.yAGHxB
+    -rw-r--r--    1 prioux  staff 1023422499 Oct 23  2013 big_one_gig_file.img
+    </pre>
+    (After the file's entire data is synchronized)
+    <pre>
+    unix$ ls -al
+    -rw-r--r--    1 prioux  staff 1071933211 Mar 21  2015 big_one_gig_file.img
+    </pre>
+  </section>
+
+  <section id="inplace">
+    <h2>File updating: <em>--inplace</em></h2>
+    In some circumpstances, we can prefer to let <em>rsync</em> modify the content of destination files, directly.
+    <pre>rsync -a <em>--inplace</em> big_one_gig_file.img prioux@destination:big_one_gig_file.img</pre>
+    This kind of behavior is ideal for LARGE files with internal content changing in localized regions,
+    such as VM disk images. This takes full advantage of the differentiating algorithm of <em>rsync</em>.
+    <pre>
 -rw-------. 1 qemu qemu  7760445440 Apr  8 11:18 abou-haider.img
 -rw-------. 1 qemu qemu 19897057280 Apr  8 11:19 ccna.img
 -rw-------. 1 qemu qemu 19308150784 Apr  8 11:17 cecile.img
@@ -621,6 +629,8 @@ total size is 4987326901335  speedup is 803.87
 -rw-------. 1 qemu qemu  8932556800 Apr  8 11:17 jsaigle.img
 -rw-------. 1 qemu qemu 31374770176 Apr  8 11:20 justin.qcow2
 </pre>
+  </section>
+
 </section>
 
 <section id="excludes">
@@ -653,8 +663,8 @@ total size is 4987326901335  speedup is 803.87
 <section id="multisources">
   <h2>Using multiple source</h2>
   Multiple sources can be sent to a single destination:
-  <pre>rsync -a /A/B  /X/Y/Z  /home/prioux /dest  # creates/updates /dest/B, /dest/Z and /dest/prioux</pre>
-  <pre>rsync -a /A/B<em>/</em> /X/Y/Z<em>/</em> /home/prioux<em>/</em> /dest  # sends all source content inside /dest</pre>
+  <pre>rsync -a /A/B  /X/Y/Z  /home/prioux /dest  # updates /dest/B, /dest/Z and /dest/prioux</pre>
+  <pre>rsync -a /A/B<em>/</em> /X/Y/Z<em>/</em> /home/prioux<em>/</em> /dest # all goes inside /dest</pre>
 </section>
 
 <section id="consider">
@@ -665,7 +675,7 @@ total size is 4987326901335  speedup is 803.87
     <li>Are there hardlinks among my sources?</li>
     <li>Are timestamp reliable? (think FAT filesystems)</li>
     <li>Do I want to make changes <em>--inplace</em>?</li>
-    <li>What are the <em>--exludes</em> I can specify?</li>
+    <li>What are the <em>--excludes</em> I can specify?</li>
     <li>Do I need <em>rsync</em> to run as root on the source side?</li>
     <li>What about on the destination side?</li>
   </ul>
