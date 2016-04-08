@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <link rel="stylesheet" href="css/reveal.css">
+  <link rel="stylesheet" href="css/theme/night.css">
+  <meta charset="utf-8"/>
+</head>
+
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+<section id="title">
+  <h2><em>rsync</em>: A Quick Tour</h2>
+  Pierre Rioux
+  <br>
+  <span>ACElab Developer Meeting, April 2016</span>
+</section>
+
+<section id="whatisit">
+  <h2>What is it?</h2>
+  <ul>
+    <li>it's a UNIX utility program,</li>
+    <li>command line only,</li>
+    <li>and boringly, it copies files...</li>
+    <li>... yet it's still the greatest thing ever.</li>
+  </ul>
+</section>
+
+<section id="history">
+  <h2>History of <em>rsync</em></h2>
+  <ul>
+    <li>Originally co-developed by Andrew Tridgell,<br>as a part of his Ph. D. thesis.</li>
+    <li>So popular that it is now installed by default<br>on almost all LINUX distributions.</li>
+    <li>It's the basis of many common solutions for<br>distributing files or backing them up.</li>
+    <li>At the ACElab, almost all nightly backups are<br>performed, basically, by <em>rsync</em>.</li>
+  </ul>
+</section>
+
+
+
+<section>
+
+  <section id="cpscprsync">
+    <h2><em>cp</em>, <em>scp</em> and <em>rsync</em> usage</h2>
+    Well, they all look much the same, eh?<br>
+    <pre>cp SOURCE DESTINATION</pre>
+    <pre>scp SOURCE DESTINATION</pre>
+    <pre>rsync SOURCE DESTINATION</pre>
+  </section>
+
+  <section id="whatdoescp">
+    <h2>What does <em>cp</em> do?</h2>
+    <pre>cp    myfile myfilecopy</pre>
+    <pre>cp -r mydir mydircopy</pre>
+    <ul>
+      <li>Source files always fully read from disk.</li>
+      <li>Data sent to destination even if it already exists there (crushed!)</li>
+    </ul>
+  </section>
+
+  <section id="whatdoesscp">
+    <h2>What does <em>scp</em> do?</h2>
+    <pre>scp    myfile           user@host:myfilecopy</pre>
+    <pre>scp -r mydir            user@host:mydircopy</pre>
+    <pre>scp    user@host:myfile myfilecopy</pre>
+    <pre>scp -r user@host:mydir  mydircopy</pre>
+    <ul>
+      <li>This is just like <em>cp</em> except it sends<br>
+          the data through the network to another host.</li>
+      <li>So? Same problems as with <em>cp</em>.</li>
+    </ul>
+  </section>
+
+  <section id="whatdoesrsync">
+    <h2>What does <em>rsync</em> do?</h2>
+    <pre>rsync -a myfile           user@host:myfilecopy</pre>
+    <pre>rsync -a mydir            user@host:mydircopy</pre>
+    <pre>rsync -a user@host:myfile myfilecopy</pre>
+    <pre>rsync -a user@host:mydir  mydircopy</pre>
+
+    <ul>
+      <li>The source and destination specifications<br>are familiar to <em>scp</em> users</li>
+      <li>Ignore the <em>-a</em> option for the moment</li>
+      <li>Darn it Pierre that still doesn't tell us what's different about it!</li>
+    </ul>
+  </section>
+
+</section>
+
+
+
+<section>
+
+  <section id="destkey1">
+    <h2>The destination is the key</h2>
+
+    Case 1: When the files at the destination <em>DO NOT</em> exist,<br>
+    the behavior of all these tools is similar:
+    <p>
+    <ol>
+      <li>all the input files are opened at the source;</li>
+      <li>their contents are read in;</li>
+      <li>it is sent to the destination... </li>
+      <li>...where file entries are created</li>
+      <li>and the contents put in them.</li>
+    </ol>
+  </section>
+
+  <section id="destkey2">
+    <h2>The destination is the key</h2>
+
+    Case 2: When the files at the destination <em>DO</em> exist,<br>
+    the behavior is quite different:
+    <p>
+
+    <ul>
+      <li><em>cp</em> and <em>scp</em> will just crush content of the destination files</li>
+      <li><em>rsync</em> will try to identify the differences in content, and only send those differences</li>
+      <li><em>rsync</em> will adjust the files at the destination so they match the source</li>
+      <li><em>rsync</em> will not send anything if there is no need to do so!</li>
+    </ul>
+  </section>
+
+</section>
+
+
+
+<section id="rsyncatbothends">
+  <h2><em>rsync</em> runs at both ends</h2>
+  Whenever <em>rsync</em> is launched, two<sup>1</sup> copies<br>of the program are involved:
+  <p>
+  <ul>
+    <li>One copy at the source, the <em>sender</em></li>
+    <li>One copy at the destination, the <em>receiver</em></li>
+  </ul>
+  <p>
+  Their roles are defined by the <em>rsync</em> algorithm.
+  <p>
+  <span style="font-size: 50%"><sup>1</sup> Actually, more than two.</span>
+</section>
+
+</section>
+
+<section>
+  <h2>When is <em>rsync</em> useful?</h2>
+  <ul>
+    <li>When the connection speed is slow while local file access is fast</li>
+    <li>When there are small changes among large files</li>
+    <li>When there are a limited number of changed files in large directory trees</li>
+    <li>When file content doesn't change by other attributes do</li>
+  </ul>
+</section>
+
+
+
+<section>
+
+  <section id="usage">
+    <h2>Usage statement</h2>
+    This is a sophisticated piece of software with many features.
+    <pre>
+rsync  version 3.0.9  protocol version 30
+Copyright (C) 1996-2011 by Andrew Tridgell, Wayne Davison, and others.
+Web site: http://rsync.samba.org/
+Capabilities:
+    64-bit files, 64-bit inums, 64-bit timestamps, 64-bit long ints,
+    socketpairs, hardlinks, symlinks, IPv6, batchfiles, inplace,
+    append, ACLs, xattrs, iconv, symtimes
+
+rsync comes with ABSOLUTELY NO WARRANTY.  This is free software, and you
+are welcome to redistribute it under certain conditions.  See the GNU
+General Public Licence for details.
+
+rsync is a file transfer program capable of efficient remote update
+via a fast differencing algorithm.
+
+Usage: rsync [OPTION]... SRC [SRC]... DEST
+  or   rsync [OPTION]... SRC [SRC]... [USER@]HOST:DEST
+  or   rsync [OPTION]... SRC [SRC]... [USER@]HOST::DEST
+  or   rsync [OPTION]... SRC [SRC]... rsync://[USER@]HOST[:PORT]/DEST
+  or   rsync [OPTION]... [USER@]HOST:SRC [DEST]
+  or   rsync [OPTION]... [USER@]HOST::SRC [DEST]
+  or   rsync [OPTION]... rsync://[USER@]HOST[:PORT]/SRC [DEST]
+The ':' usages connect via remote shell, while '::' & 'rsync://' usages connect
+to an rsync daemon, and require SRC or DEST to start with a module name.
+</pre>
+  </section>
+
+  <section>
+    <pre>
+Options
+ -v, --verbose               increase verbosity
+ -q, --quiet                 suppress non-error messages
+     --no-motd               suppress daemon-mode MOTD (see manpage caveat)
+ -c, --checksum              skip based on checksum, not mod-time & size
+ -a, --archive               archive mode; equals -rlptgoD (no -H,-A,-X)
+     --no-OPTION             turn off an implied OPTION (e.g. --no-D)
+ -r, --recursive             recurse into directories
+ -R, --relative              use relative path names
+     --no-implied-dirs       don't send implied dirs with --relative
+ -b, --backup                make backups (see --suffix & --backup-dir)
+     --backup-dir=DIR        make backups into hierarchy based in DIR
+     --suffix=SUFFIX         set backup suffix (default ~ w/o --backup-dir)
+ -u, --update                skip files that are newer on the receiver
+     --inplace               update destination files in-place (SEE MAN PAGE)
+     --append                append data onto shorter files
+     --append-verify         like --append, but with old data in file checksum
+ -d, --dirs                  transfer directories without recursing
+ -l, --links                 copy symlinks as symlinks
+ -L, --copy-links            transform symlink into referent file/dir
+     --copy-unsafe-links     only "unsafe" symlinks are transformed
+     --safe-links            ignore symlinks that point outside the source tree
+ -k, --copy-dirlinks         transform symlink to a dir into referent dir
+ -K, --keep-dirlinks         treat symlinked dir on receiver as dir
+</pre>
+  </section>
+
+  <section>
+    <pre>
+ -H, --hard-links            preserve hard links
+ -p, --perms                 preserve permissions
+ -E, --executability         preserve the file's executability
+     --chmod=CHMOD           affect file and/or directory permissions
+ -A, --acls                  preserve ACLs (implies --perms)
+ -X, --xattrs                preserve extended attributes
+ -o, --owner                 preserve owner (super-user only)
+ -g, --group                 preserve group
+     --devices               preserve device files (super-user only)
+     --copy-devices          copy device contents as regular file
+     --specials              preserve special files
+ -D                          same as --devices --specials
+ -t, --times                 preserve modification times
+ -O, --omit-dir-times        omit directories from --times
+     --super                 receiver attempts super-user activities
+     --fake-super            store/recover privileged attrs using xattrs
+ -S, --sparse                handle sparse files efficiently
+ -n, --dry-run               perform a trial run with no changes made
+ -W, --whole-file            copy files whole (without delta-xfer algorithm)
+ -x, --one-file-system       don't cross filesystem boundaries
+ -B, --block-size=SIZE       force a fixed checksum block-size
+ -e, --rsh=COMMAND           specify the remote shell to use
+     --rsync-path=PROGRAM    specify the rsync to run on the remote machine
+     --existing              skip creating new files on receiver
+</pre>
+  </section>
+
+  <section>
+    <pre>
+     --ignore-existing       skip updating files that already exist on receiver
+     --remove-source-files   sender removes synchronized files (non-dirs)
+     --del                   an alias for --delete-during
+     --delete                delete extraneous files from destination dirs
+     --delete-before         receiver deletes before transfer, not during
+     --delete-during         receiver deletes during the transfer
+     --delete-delay          find deletions during, delete after
+     --delete-after          receiver deletes after transfer, not during
+     --delete-excluded       also delete excluded files from destination dirs
+     --ignore-errors         delete even if there are I/O errors
+     --force                 force deletion of directories even if not empty
+     --max-delete=NUM        don't delete more than NUM files
+     --max-size=SIZE         don't transfer any file larger than SIZE
+     --min-size=SIZE         don't transfer any file smaller than SIZE
+     --partial               keep partially transferred files
+     --partial-dir=DIR       put a partially transferred file into DIR
+     --delay-updates         put all updated files into place at transfer's end
+ -m, --prune-empty-dirs      prune empty directory chains from the file-list
+     --numeric-ids           don't map uid/gid values by user/group name
+     --timeout=SECONDS       set I/O timeout in seconds
+     --contimeout=SECONDS    set daemon connection timeout in seconds
+ -I, --ignore-times          don't skip files that match in size and mod-time
+     --size-only             skip files that match in size
+     --modify-window=NUM     compare mod-times with reduced accuracy
+</pre>
+  </section>
+
+  <section>
+    <pre>
+ -T, --temp-dir=DIR          create temporary files in directory DIR
+ -y, --fuzzy                 find similar file for basis if no dest file
+     --compare-dest=DIR      also compare destination files relative to DIR
+     --copy-dest=DIR         ... and include copies of unchanged files
+     --link-dest=DIR         hardlink to files in DIR when unchanged
+ -z, --compress              compress file data during the transfer
+     --compress-level=NUM    explicitly set compression level
+     --skip-compress=LIST    skip compressing files with a suffix in LIST
+ -C, --cvs-exclude           auto-ignore files the same way CVS does
+ -f, --filter=RULE           add a file-filtering RULE
+ -F                          same as --filter='dir-merge /.rsync-filter'
+                             repeated: --filter='- .rsync-filter'
+     --exclude=PATTERN       exclude files matching PATTERN
+     --exclude-from=FILE     read exclude patterns from FILE
+     --include=PATTERN       don't exclude files matching PATTERN
+     --include-from=FILE     read include patterns from FILE
+     --files-from=FILE       read list of source-file names from FILE
+ -0, --from0                 all *-from/filter files are delimited by 0s
+ -s, --protect-args          no space-splitting; only wildcard special-chars
+     --address=ADDRESS       bind address for outgoing socket to daemon
+     --port=PORT             specify double-colon alternate port number
+     --sockopts=OPTIONS      specify custom TCP options
+     --blocking-io           use blocking I/O for the remote shell
+     --stats                 give some file-transfer stats
+</pre>
+  </section>
+
+  <section>
+    <pre>
+ -8, --8-bit-output          leave high-bit chars unescaped in output
+ -h, --human-readable        output numbers in a human-readable format
+     --progress              show progress during transfer
+ -P                          same as --partial --progress
+ -i, --itemize-changes       output a change-summary for all updates
+     --out-format=FORMAT     output updates using the specified FORMAT
+     --log-file=FILE         log what we're doing to the specified FILE
+     --log-file-format=FMT   log updates using the specified FMT
+     --password-file=FILE    read daemon-access password from FILE
+     --list-only             list the files instead of copying them
+     --bwlimit=KBPS          limit I/O bandwidth; KBytes per second
+     --write-batch=FILE      write a batched update to FILE
+     --only-write-batch=FILE like --write-batch but w/o updating destination
+     --read-batch=FILE       read a batched update from FILE
+     --protocol=NUM          force an older protocol version to be used
+     --iconv=CONVERT_SPEC    request charset conversion of filenames
+     --checksum-seed=NUM     set block/file checksum seed (advanced)
+ -4, --ipv4                  prefer IPv4
+ -6, --ipv6                  prefer IPv6
+     --version               print version number
+(-h) --help                  show this help (-h is --help only if used alone)
+
+Use "rsync --daemon --help" to see the daemon-mode command-line options.
+Please see the rsync(1) and rsyncd.conf(5) man pages for full documentation.
+See http://rsync.samba.org/ for updates, bug reports, and answers
+</pre>
+  </section>
+
+  <section id="dasha">
+    <h2>Did you notice <em>-a</em> in there?</h2>
+    It's the most commonly used option. It means:
+    <p>
+    <ul>
+      <li>recursive (-r)</li>
+      <li>copy symbolic links (-l)</li>
+      <li>copy file permissions (-p)</li>
+      <li>copy file timestamps (-t)</li>
+      <li>copy file groupship (-g)</li>
+      <li>copy file ownership (-o)</li>
+      <li>... and a few more</li>
+    </ul>
+    <p>
+    This is why most of the examples in this<br>presentation will show <em>rsync -a</em>.
+  </section>
+
+</section>
+
+
+
+<section>
+
+  <section id="sourceortarget">
+    <h2>Source or target specifications</h2>
+    Just like for <em>scp</em> a source or destination can be:
+    <p>
+    <table>
+      <tr>
+        <td>A local absolute path:</td>
+        <td>/data/study/minecraft</td>
+      </tr>
+      <tr>
+        <td>A local relative path:</td>
+        <td>mydir/subdir</td>
+      </tr>
+      <tr>
+        <td>A remote absolute path, accessible through SSH using the same user name:</td>
+        <td>xyz.mcgill.ca:/home/prioux</td>
+      </tr>
+      <tr>
+        <td>A remote relative path, accessible through SSH using the same user name:</td>
+        <td>xyz.mcgill.ca:presentations<br><small>(defaults to home of user)<small></td>
+      </tr>
+      <tr>
+        <td>A remote path, accessible through SSH using some other user name:</td>
+        <td>alan@xyz.mcgill.ca:/papers</td>
+      </tr>
+    </table>
+  </section>
+
+  <section id="localcopy">
+    <h2>Local copy</h2>
+    <pre>rsync -a myfile myfilecopy</pre>
+    <pre>rsync -a /data/mydir/ /home/prioux/localdir</pre>
+  </section>
+
+  <section id="pushmode">
+    <h2>Push mode</h2>
+    <pre>rsync -a /data/localdir/ prioux@superserver.mcgill.ca:/data/brainfolly</pre>
+  </section>
+
+  <section id="pullmode">
+    <h2>Pull mode</h2>
+    <pre>rsync -a prioux@superserver.mcgill.ca:/data/brainfolly/ ~/follycopy</pre>
+  </section>
+
+</section>
+
+
+<section id="algorithm">
+  <h2><em>rsync</em> algorithm</h2>
+  Without going into much details:
+  <p>
+  <ul>
+    <li>If the file doesn't exist at the destination, send it over</li>
+    <li>If the file does exist, compare size and timestamps:<br>
+        <ol>
+          <li>If they match, only adjust the other attributes (owner, group, permissions...)</li>
+          <li>If they do NOT match, enter dialog mode to identify differences in content, and synchronize.</li>
+        </ol>
+    </li>
+  </ul>
+</section>
+
+<section>
+
+  <section id="dashv">
+    <h2>Reports: simple file list</h2>
+
+    <pre>rsync -a <em>-v</em> SOURCE DEST</pre>
+
+<pre>
+building file list ... done
+./
+README.md
+index.html
+css/
+css/reveal.css
+css/reveal.scss
+(etc)
+</pre>
+
+  </section>
+
+  <section id="dashi">
+    <h2>Reports: itemized file list</h2>
+
+    <pre>rsync -a <em>-i</em> SOURCE DEST</pre>
+
+<pre>
+&gt;f..t.... README.md
+&gt;f.st.... index.html
+.f.....g. css/reveal.css
+(etc)
+</pre>
+
+  </section>
+
+  <section id="dashstats">
+    <h2>Reports: stats</h2>
+
+    This shows the stats for the actual ACElab nightly backup of
+    Breitner1-vh's NFS data partition (where all VMs get their /data mounts)
+    for April 7nd, 2016.<p>
+    The backup took about 40 minutes.<br>
+    Source: 5T, 2M files. Changes: 6G.
+
+    <pre>rsync -a <em>--stats</em> SOURCE DEST</pre>
+
+<pre>
+Number of files: 2014473
+Number of files transferred: 9360
+Total file size: 4987326901335 bytes
+Total transferred file size: 6148253201 bytes
+Literal data: 6147647701 bytes
+Matched data: 605500 bytes
+File list size: 55018731
+File list generation time: 0.035 seconds
+File list transfer time: 0.000 seconds
+Total bytes sent: 6203895660
+Total bytes received: 277811
+
+sent 6203895660 bytes  received 277811 bytes  2732514.19 bytes/sec
+total size is 4987326901335  speedup is 803.87
+</pre>
+
+  </section>
+
+</section>
+
+
+
+<section id="consider">
+  <h2>Things to consider</h2>
+  Before launching a <em>rsync</em> command, consider:
+  <p>
+  <ul>
+    <li>Are there hardlinks among my sources?</li>
+    <li>Are timestamp reliable? (think FAT filesystems)</li>
+    <li>Do I want to make changes <em>--inplace</em>?</li>
+    <li>What are the <em>--exludes</em> I can specify?</li>
+    <li>Do I need <em>rsync</em> to run as root on the source side?</li>
+    <li>What about on the destination side?</li>
+  </ul>
+</section>
+
+<section id="sourceroot">
+  <h2>Running sender as root</h2>
+  <ul>
+    <li>Can traverse the source tree completely</li>
+    <li>Only needed when that tree contains mixed ownership data</li>
+  </ul>
+</section>
+
+<section id="destroot">
+  <h2>Running receiver as root</h2>
+  <ul>
+    <li>Can recreate with ownership completely</li>
+    <li>Security risk for automatic systems</li>
+  </ul>
+</section>
+
+<section id="fakeroot">
+  <h2>Fake root mode (<em>--fake-super</em>)</h2>
+   <ul>
+     <li>You still run as root on the source side</li>
+     <li>On the destination, a non-privileged user can run <em>rsync</em></li>
+     <li>Information about ownerhsip, groupship etc is stored in extended
+         attributes, assuming the target filesystem supports them (e.g <em>ext4</em>)</li>
+     <li>This is what ACElab use for incremental backups</li>
+   </ul>
+</section>
+
+<section id="hardlinks">
+  <h2>Hard links: not reproduced!</h2>
+  <ul>
+    <li>Hardlinks: entries in distinct directories, with distinct names, pointing to the same inode</li>
+    <li>It means two or more files that seem distinct and in two different directories have in fact the same owner, same group, same timestamps and <em>same content</em> (single copy!)</li>
+    <li><em>rsync</em> by default will not recognize this, it will send the content twice and create two files</li>
+    <li>Using the <em>-H</em> option, however, <em>rsync</em> will track inode numbers and the destination side will recreate hard links</li>
+  </ul>
+</section>
+
+<section id="transport">
+  <h2>Network transport options</h2>
+  <ul>
+    <li>When copying locally, there is no network transport; the
+        two <em>rsync</em> programs talk to each other using local IPC</li>
+    <li>When copying remotely, two transport mechanism are supported:<br>
+        <ul>
+          <li><em>rsync protocol</em> over port 873 (unencrypted)</li>
+          <li><em>rsync protocol</em> over SSH (encrypted)</li>
+        </ul>
+    </li>
+    <p>
+    <small>Note: source and destination syntax change for each mode; not shown.</small>
+  </ul>
+</section>
+
+<section id="delete">
+  <h2>Delete spurious files</h2>
+  Counterintuitively, by default...
+  <p>
+  <ul>
+    <li>if other files exist in the destination directory, they are left alone</li>
+    <li>we must use <em>--delete</em> to tell <em>rsync</em> to clean them up</li>
+  </ul>
+  <p>
+  <pre>rsync -a <em>--delete</em> /mystudy ace-storage-19:/studybackup</pre>
+</section>
+
+<section id="destexists">
+  <h2>Important!</h2>
+  <h3>Does the destination directory exist?</h3>
+  <em>rsync</em> creates the destination directory if it<br>
+  doesn't already exist (last component only).
+  <p>
+  E.g. if /X/Y/Z exists but not N, then N will be created and the content of C will go into N:
+  <pre>rsync -a /A/B/C   /X/Y/Z<em>/N</em></pre>
+
+  Which means that a repetition of the <em>rsync</em> command can cause total duplication!
+
+  <pre>rsync -a /A/B/C   /X/Y/Z/N  # N doesn't exist but is created
+       rsync -a /A/B/C   /X/Y/Z/N  # N exists now, so data sent to /X/Y/Z/N<em>/C</em> !!!</pre>
+</section>
+
+<section id="trailingslash">
+  <h2>Important!</h2>
+  <h3>The trailing <em>/</em> in the source!</h3>
+  <em>rsync</em>'s behavior change when a trailing <em>/</em> is added to the source specification.
+  <p>
+  E.g. Assuming X/Y/Z exists:
+  <pre>rsync -a /A/B/<em>C</em>   /X/Y/Z     # will create/update /X/Y/Z/<em>C</em> at the destination</pre>
+  <pre>rsync -a /A/B/C<em>/</em>  /X/Y/Z     # the files <em>inside</em> C go directly <em>inside</em> /X/Y/Z</pre>
+</section>
+
+<section id="dryrun">
+  <h2>Dry-run mode</h2>
+  A useful option for making sure all specifications and directories are OK is to use the <em>dry run</em> mode:
+  <pre>rsync -a --dry-run -v /source /dest # same as -n</pre>
+  <pre>rsync -a -n        -v /source /dest # same as --dry-run</pre>
+  In such a mode, no files are modified at the destination at all.
+  In combination with the reporting options, one can double-check that <em>rsync</em> will do what is expected.
+</section>
+
+<section id="notinplace">
+  <h2>File updating</h2>
+  <h3>Not performed in place!</h3>
+  When updating an existing file on the destination side, <em>rsync</em>
+  recreates it beside the previous version and then renames it in place:
+  <pre>
+  unix$ ls -al
+  -rw-r--r--    1 prioux  staff   44871173 Apr 08  2016 .big_one_gig_file.img.yAGHxB
+  -rw-r--r--    1 prioux  staff 1023422499 Oct 23  2013 big_one_gig_file.img
+  </pre>
+  (After the file's entire data is synchronized)
+  <pre>
+  unix$ ls -al
+  -rw-r--r--    1 prioux  staff 1071933211 Mar 21  2015 big_one_gig_file.img
+  </pre>
+</section>
+
+<section id="inplace">
+  <h2>File updating: <em>--inplace</em></h2>
+  In some circumpstances, we can prefer to let <em>rsync</em> modify the content of destination files, directly.
+  <pre>rsync -a <em>--inplace</em> big_one_gig_file.img prioux@destination:big_one_gig_file.img</pre>
+  This kind of behavior is ideal for LARGE files with internal content changing in localized regions,
+  such as VM disk images. This takes full advantage of the differentiating algorithm of <em>rsync</em>.
+  <pre>
+-rw-------. 1 qemu qemu  7760445440 Apr  8 11:18 abou-haider.img
+-rw-------. 1 qemu qemu 19897057280 Apr  8 11:19 ccna.img
+-rw-------. 1 qemu qemu 19308150784 Apr  8 11:17 cecile.img
+-rw-------. 1 qemu qemu 20052967424 Apr  8 11:17 christine.qcow2
+-rw-------. 1 qemu qemu 12864585728 Apr  8 11:17 dave.img
+-rw-------. 1 qemu qemu 19894697984 Apr  8 11:17 epigenomics.img
+-rw-------. 1 qemu qemu 20913717248 Apr  8 11:19 greg.img
+-rw-------. 1 qemu qemu 14506393600 Apr  8 11:19 jordan.img
+-rw-------. 1 qemu qemu  8932556800 Apr  8 11:17 jsaigle.img
+-rw-------. 1 qemu qemu 31374770176 Apr  8 11:20 justin.qcow2
+</pre>
+</section>
+
+<section id="excludes">
+  <h2>Exclusions</h2>
+  You can tell <em>rsync</em> to ignore part of your source tree:
+  <pre>rsync -a --exclude="*/not_backed_up" --exclude="**/*.bak" /nfs/data remote:/dest</pre>
+</section>
+
+<section id="deltas">
+  <h2>Timestamps deltas</h2>
+  Sometimes, timestamps cannot be compared exactly.
+  <p>
+  <pre>rsync -a <em>--modify-window=2</em> source dest</pre>
+  <ul>
+    <li>You can specify a 'fuzziness' level when comparing timestamps.</li>
+    <li>Useful for source and destination filesystems with different time granularity</li>
+    <li>E.g. FAT filesystems on USB keys, with a resolution of 2 seconds</li>
+  </ul>
+</section>
+
+<section id="sizeonly">
+  <h2>Skipping files while ignoring timestamps</h2>
+  If the destination already has files with known content in sync, but
+  with wrong timestamps, then you can use <em>rsync</em> to adjust all the timestamps
+  by telling it to ONLY compare files by their presence and size.
+  <pre>rsync -a <em>--size-only</em> source dest</pre>
+  Otherwise, because the timestamps ae different, the contents of all files would be inspected!
+</section>
+
+<section id="multisources">
+  <h2>Using multiple source</h2>
+  Multiple sources can be sent to a single destination:
+  <pre>rsync -a /A/B  /X/Y/Z  /home/prioux /dest  # creates/updates /dest/B, /dest/Z and /dest/prioux</pre>
+  <pre>rsync -a /A/B<em>/</em> /X/Y/Z<em>/</em> /home/prioux<em>/</em> /dest  # sends all source content inside /dest</pre>
+</section>
+
+<section id="end">
+  <h2>Thank you!</h2>
+  <ul>
+    <li>Please read the man page for <em>rsync</em>, it's worth it</li>
+    <li>If you are not sure about running a <em>rsync</em> command that could potentially be destructive,
+        please use <em>--dry-run</em> and contact me to review the command.</li>
+    <li>The word <em style="color: blue">rsync</em> can be spelled in other colors.
+  </ul>
+</section>
+
+    </div>
+  </div>
+
+  <script src="js/reveal.js"></script>
+  <script>
+    Reveal.initialize(
+    { slideNumber: true, history: true }
+    );
+  </script>
+  <style>
+    .reveal pre {
+      background: #033;
+      padding: 0.2em 0.5em 0.3em 0.5em;
+    }
+    .reveal em {
+      color: yellow;
+      font-style: normal; /* yes please! */
+    }
+    .reveal strong {
+      color: #0ff;  /* funny, I'm using RGB with only three digits today */
+    }
+  </style>
+</body>
+
+</html>
