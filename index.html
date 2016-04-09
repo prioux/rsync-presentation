@@ -599,16 +599,16 @@ total size is 4987326901335  speedup is 803.87
     <h3>Not performed in place!</h3>
     When updating an existing file on the destination side, <em>rsync</em>
     recreates it beside the previous version and then renames it in place:
-    <pre>
-    unix$ ls -al
-    -rw-r--r--    1 prioux  staff   44871173 Apr 08  2016 .big_one_gig_file.img.yAGHxB
-    -rw-r--r--    1 prioux  staff 1023422499 Oct 23  2013 big_one_gig_file.img
-    </pre>
+<pre>
+unix$ ls -al
+-rw-r--r--    1 prioux  staff   44871173 Apr 08  2016 .big_one_gig_file.img.yAGHxB
+-rw-r--r--    1 prioux  staff 1023422499 Oct 23  2013 big_one_gig_file.img
+</pre>
     (After the file's entire data is synchronized)
-    <pre>
-    unix$ ls -al
-    -rw-r--r--    1 prioux  staff 1071933211 Mar 21  2015 big_one_gig_file.img
-    </pre>
+<pre>
+unix$ ls -al
+-rw-r--r--    1 prioux  staff 1071933211 Mar 21  2015 big_one_gig_file.img
+</pre>
   </section>
 
   <section id="inplace">
