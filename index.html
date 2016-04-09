@@ -413,7 +413,7 @@ See http://rsync.samba.org/ for updates, bug reports, and answers
     Which means that a repetition of the <em>rsync</em> command can cause total duplication!
 
     <pre>rsync -a /A/B/C   /X/Y/Z/N  # N doesn't exist but is created
-         rsync -a /A/B/C   /X/Y/Z/N  # N exists now, so data sent to /X/Y/Z/N<em>/C</em> !!!</pre>
+rsync -a /A/B/C   /X/Y/Z/N  # N exists now, so data sent to /X/Y/Z/N<em>/C</em> !!!</pre>
   </section>
 
   <section id="trailingslash">
@@ -657,7 +657,7 @@ total size is 4987326901335  speedup is 803.87
   with wrong timestamps, then you can use <em>rsync</em> to adjust all the timestamps
   by telling it to ONLY compare files by their presence and size.
   <pre>rsync -a <em>--size-only</em> source dest</pre>
-  Otherwise, because the timestamps ae different, the contents of all files would be inspected!
+  Otherwise, because the timestamps are different, the contents of all files would be inspected!
 </section>
 
 <section id="multisources">
