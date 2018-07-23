@@ -149,7 +149,7 @@
     <li>When the connection speed is slow while local file access is fast</li>
     <li>When there are small changes among large files</li>
     <li>When there are a limited number of changed files in large directory trees</li>
-    <li>When file content doesn't change by other attributes do</li>
+    <li>When file content doesn't change but other attributes do</li>
   </ul>
 </section>
 
@@ -407,10 +407,13 @@ See http://rsync.samba.org/ for updates, bug reports, and answers
     <em>rsync</em> creates the destination directory if it<br>
     doesn't already exist (last component only).
     <p>
-    E.g. if /X/Y/Z exists but not N, then N will be created and the content of C will go into N:
+    E.g. if /X/Y/Z exists but not N, then N will be created<br>
+    and <strong>the content of C will go into N</strong>:
+
     <pre>rsync -a /A/B/C   /X/Y/Z<em>/N</em></pre>
 
-    Which means that a repetition of the <em>rsync</em> command can cause total duplication!
+    Which means that a repetition of the <em>rsync</em> command<br>
+    can cause <span class="red">total duplication</span>!
 
     <pre>rsync -a /A/B/C   /X/Y/Z/N  # N doesn't exist but is created
 rsync -a /A/B/C   /X/Y/Z/N  # N exists now, so data sent to /X/Y/Z/N<em>/C</em> !!!</pre>
@@ -718,6 +721,9 @@ unix$ ls -al
     }
     .reveal strong {
       color: #0ff;  /* funny, I'm using RGB with only three digits today */
+    }
+    .reveal .red {
+      color: red;
     }
   </style>
 </body>
